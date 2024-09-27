@@ -10,6 +10,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.example.fetchrewardscodingexercise.ui.theme.FetchRewardsCodingExerciseTheme
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
+import org.json.JSONArray
+import java.io.IOException
 import java.util.LinkedList
 
 class MainActivity : ComponentActivity() {
@@ -35,11 +40,42 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun getFetchItemList(): List<FetchItem> {
-        val list = LinkedList<FetchItem>()
-        for (i in 0..10) {
-            list.add(FetchItem("id$i", "listId$i", "name$i"))
+        val client = OkHttpClient()
+        val request = Request.Builder()
+            .url("https://fetch-hiring.s3.amazonaws.com/hiring.json")
+            .build()
+
+        val fetchItemList = mutableListOf<FetchItem>()
+
+        // Run this network request on a separate thread
+        val thread = Thread {
+            try {
+                val response: Response = client.newCall(request).execute()
+                if (response.isSuccessful) {
+                    val jsonData = response.body?.string()
+                    val jsonArray = JSONArray(jsonData)
+
+                    // Parse the JSON array and add the items to the list
+                    for (i in 0 until jsonArray.length()) {
+                        val jsonObject = jsonArray.getJSONObject(i)
+                        val id = jsonObject.getString("id")
+                        val listId = jsonObject.getString("listId")
+                        val name = jsonObject.getString("name")
+
+                        // Avoid adding items with null or empty names
+                        if (!name.isNullOrEmpty()) {
+                            fetchItemList.add(FetchItem(id, listId, name))
+                        }
+                    }
+                }
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
         }
-        return list
+        thread.start()
+        thread.join()  // Wait for the thread to finish
+
+        return fetchItemList
     }
 }
 
