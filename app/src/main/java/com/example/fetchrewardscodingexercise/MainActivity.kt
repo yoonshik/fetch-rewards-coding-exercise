@@ -63,7 +63,7 @@ class MainActivity : ComponentActivity() {
                         val name = jsonObject.getString("name")
 
                         // Avoid adding items with null or empty names
-                        if (!name.isNullOrEmpty()) {
+                        if (!name.isNullOrEmpty() and !name.equals("null")) {
                             fetchItemList.add(FetchItem(id, listId, name))
                         }
                     }
