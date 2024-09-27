@@ -34,7 +34,7 @@ class MainActivity : ComponentActivity() {
     fun FetchItemList(items: List<FetchItem>, modifier: Modifier = Modifier) {
         LazyColumn(modifier) {
             items(items) { item ->
-                Text(text = "${item.id} ${item.listId} ${item.name}")
+                Text(text = "id${item.id} listId${item.listId} ${item.name}")
             }
         }
     }
